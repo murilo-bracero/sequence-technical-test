@@ -12,6 +12,7 @@ type Cache interface {
 	Set(key string, value []byte)
 	Get(key string) []byte
 	Evict(key string)
+	EvictAll()
 }
 
 type cache struct {
@@ -44,4 +45,8 @@ func (c *cache) Get(key string) []byte {
 
 func (c *cache) Evict(key string) {
 	c.bc.Delete(key)
+}
+
+func (c *cache) EvictAll() {
+	c.bc.Reset()
 }

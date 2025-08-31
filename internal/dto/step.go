@@ -15,7 +15,7 @@ type CreateStepRequest struct {
 }
 
 func (req *CreateStepRequest) Validate() error {
-	if req.StepNumber == 0 {
+	if req.StepNumber <= 0 {
 		return fmt.Errorf("step number is required")
 	}
 

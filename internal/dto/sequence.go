@@ -22,6 +22,16 @@ func (req *CreateSequenceRequest) Validate() error {
 			return err
 		}
 	}
+
+	// checks if the step numbers are unique
+	stepNumbers := make(map[int]bool)
+	for _, step := range req.Steps {
+		if _, ok := stepNumbers[step.StepNumber]; ok {
+			return fmt.Errorf("step number %d is not unique", step.StepNumber)
+		}
+		stepNumbers[step.StepNumber] = true
+	}
+
 	return nil
 }
 

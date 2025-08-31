@@ -65,4 +65,16 @@ func TestCreateStepRequest_Validate(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "step number is required", err.Error())
 	})
+
+	t.Run("should return error when step number is negative", func(t *testing.T) {
+		req := dto.CreateStepRequest{
+			StepNumber:  -1,
+			MailSubject: "subject",
+			MailContent: "content",
+		}
+
+		err := req.Validate()
+		assert.Error(t, err)
+		assert.Equal(t, "step number is required", err.Error())
+	})
 }

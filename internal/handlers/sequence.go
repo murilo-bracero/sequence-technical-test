@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -30,16 +31,18 @@ func NewSequenceHandler(cfg *config.Config, cache cache.Cache, sequenceService s
 }
 
 func (h *sequenceHandler) GetSequences(w http.ResponseWriter, r *http.Request) {
-	if h.cache.Get("sequences") != nil {
-		w.Write(h.cache.Get("sequences"))
-		return
-	}
-
 	limit := utils.SafeAtoi(r.URL.Query().Get("limit"), 50)
 
 	limit = min(limit, 100)
 
 	offset := utils.SafeAtoi(r.URL.Query().Get("offset"), 0)
+
+	key := fmt.Sprintf("sequences-%d-%d", limit, offset)
+
+	if h.cache.Get(key) != nil {
+		w.Write(h.cache.Get(key))
+		return
+	}
 
 	sequences, err := h.sequenceService.GetSequences(r.Context(), limit, offset)
 	if err != nil {
@@ -50,7 +53,7 @@ func (h *sequenceHandler) GetSequences(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(sequences)
 
 	if raw, err := json.Marshal(sequences); err == nil {
-		h.cache.Set("sequences", raw)
+		h.cache.Set(key, raw)
 	}
 }
 
@@ -113,8 +116,7 @@ func (h *sequenceHandler) UpdateSequence(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(sequence)
 
-	h.cache.Evict("sequence-" + id)
-	h.cache.Evict("sequences")
+	h.cache.EvictAll()
 }
 
 func (h *sequenceHandler) CreateSequence(w http.ResponseWriter, r *http.Request) {
@@ -139,5 +141,5 @@ func (h *sequenceHandler) CreateSequence(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(sequence)
 
-	h.cache.Evict("sequences")
+	h.cache.EvictAll()
 }

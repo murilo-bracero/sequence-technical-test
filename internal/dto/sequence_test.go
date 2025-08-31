@@ -57,4 +57,28 @@ func TestCreateSequenceRequest_Validate(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "sequence steps are required", err.Error())
 	})
+
+	t.Run("should return error when step number is not unique", func(t *testing.T) {
+		req := dto.CreateSequenceRequest{
+			Name:                 "name",
+			OpenTrackingEnabled:  true,
+			ClickTrackingEnabled: true,
+			Steps: []*dto.CreateStepRequest{
+				{
+					StepNumber:  1,
+					MailSubject: "subject",
+					MailContent: "content",
+				},
+				{
+					StepNumber:  1,
+					MailSubject: "subject",
+					MailContent: "content",
+				},
+			},
+		}
+
+		err := req.Validate()
+		assert.Error(t, err)
+		assert.Equal(t, "step number 1 is not unique", err.Error())
+	})
 }

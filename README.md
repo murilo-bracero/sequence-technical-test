@@ -84,6 +84,34 @@ make run-bin
 
 After that, the app will be available at the specified port or, by default, port 8000.
 
+## Endpoints
+
+### POST /sequences
+
+Create a sequence
+
+```json
+{
+    "name": "My Sequence {{$randomInt 100 999}}",
+    "openTrackingEnabled": false,
+    "clickTrackingEnabled": true,
+    "steps": [
+        {
+            "mailSubject": "Subject {{$randomInt 1 99}}",
+            "stepNumber": 1,
+            "mailContent": "{{$randomInt 1 99}} {{$datetime rfc1123}}"
+        },{
+            "mailSubject": "Subject {{$randomInt 1 99}}",
+            "stepNumber": 2,
+            "mailContent": "Lorem Ipsum"
+        }
+    ]
+}
+```
+
+### GET /sequences
+
+
 ## Tooling
 
 The application relies on code generation to speed up development, specifically sqlc for database model/queries, mockgen for unit test mocks and golang-migrate for migrations.
