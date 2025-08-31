@@ -31,20 +31,20 @@ func NewSequenceHandler(cfg *config.Config, cache cache.Cache, sequenceService s
 }
 
 func (h *sequenceHandler) GetSequences(w http.ResponseWriter, r *http.Request) {
-	limit := utils.SafeAtoi(r.URL.Query().Get("limit"), 50)
+	size := utils.SafeAtoi(r.URL.Query().Get("size"), 50)
 
-	limit = min(limit, 100)
+	size = min(size, h.cfg.MaxSequencePagination)
 
-	offset := utils.SafeAtoi(r.URL.Query().Get("offset"), 0)
+	page := utils.SafeAtoi(r.URL.Query().Get("page"), 0)
 
-	key := fmt.Sprintf("sequences-%d-%d", limit, offset)
+	key := fmt.Sprintf("sequences-%d-%d", size, page)
 
 	if h.cache.Get(key) != nil {
 		w.Write(h.cache.Get(key))
 		return
 	}
 
-	sequences, err := h.sequenceService.GetSequences(r.Context(), limit, offset)
+	sequences, err := h.sequenceService.GetSequences(r.Context(), size, page)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
