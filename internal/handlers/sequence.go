@@ -102,6 +102,12 @@ func (h *sequenceHandler) CreateSequence(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	if err := req.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(&dto.HTTPError{Message: err.Error()})
+		return
+	}
+
 	sequence, err := h.sequenceService.CreateSequence(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

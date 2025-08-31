@@ -1,5 +1,7 @@
 package dto
 
+import "fmt"
+
 type CreateSequenceRequest struct {
 	Name                 string               `json:"Name"`
 	OpenTrackingEnabled  bool                 `json:"openTrackingEnabled"`
@@ -7,9 +9,20 @@ type CreateSequenceRequest struct {
 	Steps                []*CreateStepRequest `json:"steps"`
 }
 
-type CreateStepRequest struct {
-	MailSubject string `json:"mailSubject"`
-	MailContent string `json:"mailContent"`
+func (req *CreateSequenceRequest) Validate() error {
+	if req.Name == "" {
+		return fmt.Errorf("sequence name is required")
+	}
+	if len(req.Steps) == 0 {
+		return fmt.Errorf("sequence steps are required")
+	}
+
+	for _, step := range req.Steps {
+		if err := step.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type UpdateSequenceRequest struct {
