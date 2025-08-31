@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS steps_external_id_idx ON steps(external_id);

@@ -1,0 +1,1 @@
+DROP INDEX steps_external_id_idx;

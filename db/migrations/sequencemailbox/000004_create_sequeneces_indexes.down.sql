@@ -1,0 +1,1 @@
+DROP INDEX sequences_external_id_idx;
