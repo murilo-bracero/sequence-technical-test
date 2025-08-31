@@ -9,3 +9,5 @@ CREATE TABLE IF NOT EXISTS steps(
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE steps TO sequenceapi;
+
+GRANT USAGE ON SEQUENCE steps_id_seq TO sequenceapi;

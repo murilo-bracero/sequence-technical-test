@@ -7,8 +7,8 @@ services:
       - APP_PORT=8000
       - DB_HOST=db.local
       - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_USER=sequenceapi
+      - DB_PASSWORD=sequenceapi-password
       - DB_NAME=sequencemailbox
       - DB_MAX_CONNECTIONS=10
       - DB_MIN_CONNECTIONS=1
