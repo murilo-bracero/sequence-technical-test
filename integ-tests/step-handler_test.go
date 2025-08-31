@@ -70,6 +70,38 @@ func (s *StepHandlerTestSuite) TestStepHandler_CreateStep() {
 	assert.Equal(t, "test mailbody", body.MailContent)
 }
 
+func (s *StepHandlerTestSuite) TestStepHandler_CreateStep_BadRequest() {
+	t := s.T()
+
+	sequence, err := s.ev.CreateSequence(context.Background(), dto.CreateSequenceRequest{
+		Name:                 "My Sequence 1",
+		OpenTrackingEnabled:  false,
+		ClickTrackingEnabled: true,
+		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody", StepNumber: 1}},
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, sequence)
+
+	url := fmt.Sprintf("http://localhost:8000/sequences/%s/steps", sequence.ExternalID)
+
+	payload := strings.NewReader(`
+	{
+    "mailSubject": "test subject",
+    "mailContent": "test mailbody"
+	}
+	`)
+
+	req, err := http.NewRequest("POST", url, payload)
+
+	assert.NoError(t, err)
+
+	res, err := http.DefaultClient.Do(req)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+}
+
 func (s *StepHandlerTestSuite) TestStepHandler_UpdateStep() {
 	t := s.T()
 
