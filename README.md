@@ -335,6 +335,13 @@ To create this mailing system, the database should be update with the following 
 - `sequences_mailboxes` and `sequences_contacts` will act as M:M relation tables
 - `sequences_contacts` will also store information about the emails sent to contacts, which step the sequence is and when will be next mailing
 
+Also, add indexes to the following fields:
+
+- `contacts.is_active`
+- `mailboxes.is_active`
+- `sequences_contacts.next_send`
+- `sequences_contacts.last_send`
+
 Having the database and with scalability in mind, I will apply the microservices architectural paradygm with a message queue to handle the jobs and the email-shooting, that way each part of the system can scale horizontally as needed, saving costs and making the platform more reliable.
 
 The existing sequence api will need to be updated with new endpoints to CRUD the mailboxes and contacts tables.
