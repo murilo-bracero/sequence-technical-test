@@ -7,3 +7,5 @@ CREATE TABLE IF NOT EXISTS steps(
     sequence_id integer not null,
     foreign key (sequence_id) references sequences(id) on delete cascade
 );
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE steps TO sequenceapi;

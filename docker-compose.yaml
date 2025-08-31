@@ -9,7 +9,7 @@ services:
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
-      - DB_NAME=postgres
+      - DB_NAME=sequencemailbox
       - DB_MAX_CONNECTIONS=10
       - DB_MIN_CONNECTIONS=1
       - DB_MAX_CONN_IDLE_TIME=30
@@ -22,17 +22,17 @@ services:
   migration:
     image: migrate/migrate
     environment:
-      - DB_HOST=db.local
-      - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
-      - DB_NAME=postgres
     depends_on:
       - db
+    entrypoint: sh
     command: >
-      migrate -path ./db/migrations/postgres -database "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/postgres?sslmode=disable" up
-      && migrate -path ./db/migrations/sequencemailbox -database "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/sequencemailbox?sslmode=disable" up
-       
+      -c "migrate -path /migrations/postgres -database \"postgres://${DB_USER}:${DB_PASSWORD}@db:5432/postgres?sslmode=disable\" up
+      && migrate -path /migrations/sequencemailbox -database \"postgres://${DB_USER}:${DB_PASSWORD}@db:5432/sequencemailbox?sslmode=disable\" up" 
+    volumes:
+      - ./db/migrations:/migrations
+  
   db:
     image: postgres:17.6-alpine3.22
     ports:

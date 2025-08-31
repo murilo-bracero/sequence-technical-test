@@ -7,3 +7,5 @@ CREATE TABLE IF NOT EXISTS sequences(
     created timestamp not null default now(),
     updated timestamp
 );
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE sequences TO sequenceapi;

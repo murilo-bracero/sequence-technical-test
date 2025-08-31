@@ -84,7 +84,13 @@ make run-bin
 
 After that, the app will be available at the specified port or, by default, port 8000.
 
-### [Optional] Install MockGen
+## Tooling
+
+The application relies on code generation to speed up development, specifically sqlc for database model/queries, mockgen for unit test mocks and golang-migrate for migrations.
+
+Golang-migrate and sqlc are availble through docker containers, so no need to install it locally.
+
+### Install mockgen
 
 Mockgen is a golang tool used to create mocks for unit testing based on application's interfaces.
 
@@ -101,3 +107,52 @@ This will install mockgen and it should be ready to use. Check if its installed 
 ```shell
 mockgen -version
 ```
+
+## Theoretical task
+
+To create this mailing system, the database should be update with the following tables:
+
+![alt text](docs/db.png)
+
+- `mailboxes` and `contacts` tables will store their respective informations.
+- `sequences_mailboxes` and `sequences_contacts` will act as M:M relation tables
+- `sequences_contacts` will also store information about the emails sent to contacts, which step the sequence is and when will be next mailing
+
+Having the database and with scalability in mind, I will apply the microservices architectural paradygm with a message queue to handle the jobs and the email-shooting, that way each part of the system can scale horizontally as needed, saving costs and making the platform more reliable.
+
+The existing sequence api will need to be updated with new endpoints to CRUD the mailboxes and contacts tables.
+
+So the services will be:
+
+- mailing-scheduler: This is a scheduled job that will run once a day. It'll query the databale to calculate the mailbox capacities and what sending jobs will be created. This can be done through the `sequences_contacts` table, that can be joined with other tables from the sequences and mailboxes domains, specifically using the `next_send` and `last_send` fields. If the `next_send` date is less than or equal to the current date, a message will be send to a message broker to be processed by a worker.
+
+- step-mailing-worker: This is a service that will listen to the queue that receives the jobs from the mailing-scheduler, It'll responsible to send the email, and update the `sequences_contacts` table with the data required for the next shooting: the `last_send` date, the `next_send` and the `current_step` fields based on the `steps.delay_days` and `steps.step_number`.
+
+The flow will look like this:
+
+![alt text](docs/flow.png)
+
+So, to explain the flow:
+
+The user will first create contacts, mailboxes and sequences.
+
+After that he can assign one or more contacts and mailboxes to a sequence through the Sequence API, which will populate the sequences_contacts with the initial data required for the mailing-scheduler.
+
+Then, on the next run of the mailing-scheduler, it will read the `sequences_contacts` table to get which contacts the system needs to send an email, relationing it to the `sequences` and `mailboxes` tables to get the mailbox limits and to calculate the time window.
+
+For each row on `sequences_contacts` where the `next_send` is less than or equal to the current date, inside the capabilities of their mailboxes, a message will be send to the step-mailing-worker service containing the `contact_id`, `sequence_step_id` and `mailbox_id` and a timer.
+
+The timer indicates when the email should be send to the user on the current day based on the `send_start_time` and `send_end_time`. The message broker is responsible for dealing with this timer and delivering the message on the right time.
+
+Following that, the step-mailing-worker will fetch data from the database to send the email and update the `sequences_contacts` table for the current contact (populate `last_send` field), and add the information about the next run (`current_date` + `steps.delay_days`).
+
+This will make a functional MVP for the task, but can be improved:
+
+- A in-memory database, such as ValKey, can be added to the flow to handle mailbox limits more dynamically. With that, the scheduler will populate/reset the in-memory store with all limits of the mailboxes, then the step-mailing-worker can double-check the mailbox limit decrementing the limit on the store. If it is reaches 0, then the worker can resend the message to the queue with 24-hour timer on it.
+
+### Technologies used
+
+- PostgreSQL as the main database
+- Amazon SQS for the message broker, since it can scale indefinitely and supports message timers nativelly 
+- Any Mail delivery system 
+- All services can run in a Kubernetes cluster to have native horizontal scalability and container jobs support. 

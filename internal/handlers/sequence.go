@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -36,8 +35,6 @@ func (h *sequenceHandler) GetSequences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Info("hehehehe")
-
 	limit := utils.SafeAtoi(r.URL.Query().Get("limit"), 50)
 
 	limit = min(limit, 100)
@@ -62,8 +59,6 @@ func (h *sequenceHandler) GetSequence(w http.ResponseWriter, r *http.Request) {
 		w.Write(h.cache.Get("sequence-" + r.PathValue("id")))
 		return
 	}
-
-	slog.Info("hehehehe 2")
 
 	id := r.PathValue("id")
 
