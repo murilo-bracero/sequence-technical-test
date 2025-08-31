@@ -1,6 +1,7 @@
 package integtests_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -31,9 +32,18 @@ func (s *SequenceHandlerTestSuite) TestSequenceHandler_CreateSequence() {
 
 	url := "http://localhost:8000/sequences"
 
-	payload := strings.NewReader("{\"name\": \"My Sequence 982\",\"openTrackingEnabled\": false,\"clickTrackingEnabled\": true,\"steps\": [{\"mailSubject\": \"Subject 96\",\"mailContent\": \"78 Sat, 30 Aug 2025 23:51:34 GMT\"}]}")
+	csr := &dto.CreateSequenceRequest{
+		Name:                 "My Sequence 982",
+		OpenTrackingEnabled:  false,
+		ClickTrackingEnabled: true,
+		Steps:                []*dto.CreateStepRequest{{MailSubject: "Subject 96", MailContent: "test mail content", StepNumber: 1}},
+	}
 
-	req, err := http.NewRequest("POST", url, payload)
+	payload, err := json.Marshal(csr)
+
+	assert.NoError(t, err)
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
 
 	assert.NoError(t, err)
 
@@ -60,9 +70,18 @@ func (s *SequenceHandlerTestSuite) TestSequenceHandler_CreateSequence_BadRequest
 
 	url := "http://localhost:8000/sequences"
 
-	payload := strings.NewReader("{\"name\": \"\",\"openTrackingEnabled\": false,\"clickTrackingEnabled\": true,\"steps\": [{\"mailSubject\": \"Subject 96\",\"mailContent\": \"78 Sat, 30 Aug 2025 23:51:34 GMT\"}]}")
+	csr := &dto.CreateSequenceRequest{
+		Name:                 "",
+		OpenTrackingEnabled:  false,
+		ClickTrackingEnabled: true,
+		Steps:                []*dto.CreateStepRequest{{MailSubject: "Subject 96", MailContent: ""}},
+	}
 
-	req, err := http.NewRequest("POST", url, payload)
+	payload, err := json.Marshal(csr)
+
+	assert.NoError(t, err)
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
 
 	assert.NoError(t, err)
 

@@ -30,6 +30,7 @@ func (r *iteratorForCreateSteps) Next() bool {
 func (r iteratorForCreateSteps) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].ExternalID,
+		r.rows[0].StepNumber,
 		r.rows[0].MailSubject,
 		r.rows[0].MailContent,
 		r.rows[0].SequenceID,
@@ -41,5 +42,5 @@ func (r iteratorForCreateSteps) Err() error {
 }
 
 func (q *Queries) CreateSteps(ctx context.Context, arg []CreateStepsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"steps"}, []string{"external_id", "mail_subject", "mail_content", "sequence_id"}, &iteratorForCreateSteps{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"steps"}, []string{"external_id", "step_number", "mail_subject", "mail_content", "sequence_id"}, &iteratorForCreateSteps{rows: arg})
 }

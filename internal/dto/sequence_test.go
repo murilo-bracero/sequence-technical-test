@@ -17,6 +17,7 @@ func TestCreateSequenceRequest_Validate(t *testing.T) {
 			ClickTrackingEnabled: true,
 			Steps: []*dto.CreateStepRequest{
 				{
+					StepNumber:  1,
 					MailSubject: "subject",
 					MailContent: "content",
 				},
@@ -32,6 +33,7 @@ func TestCreateSequenceRequest_Validate(t *testing.T) {
 			ClickTrackingEnabled: true,
 			Steps: []*dto.CreateStepRequest{
 				{
+					StepNumber:  1,
 					MailSubject: "subject",
 					MailContent: "content",
 				},

@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS steps(
     external_id uuid not null default gen_random_uuid(),
     mail_subject varchar(255) not null,
     mail_content text,
+    step_number integer not null,
     sequence_id integer not null,
     foreign key (sequence_id) references sequences(id) on delete cascade
 );

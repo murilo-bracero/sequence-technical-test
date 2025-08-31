@@ -3,16 +3,22 @@ package dto
 import "fmt"
 
 type UpdateStepRequest struct {
+	StepNumber  *int    `json:"stepNumber"`
 	MailSubject *string `json:"mailSubject"`
 	MailContent *string `json:"mailContent"`
 }
 
 type CreateStepRequest struct {
+	StepNumber  int    `json:"stepNumber"`
 	MailSubject string `json:"mailSubject"`
 	MailContent string `json:"mailContent"`
 }
 
 func (req *CreateStepRequest) Validate() error {
+	if req.StepNumber == 0 {
+		return fmt.Errorf("step number is required")
+	}
+
 	if req.MailSubject == "" {
 		return fmt.Errorf("mail subject is required")
 	}

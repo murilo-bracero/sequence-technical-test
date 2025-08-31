@@ -12,25 +12,32 @@ import (
 )
 
 const createStep = `-- name: CreateStep :one
-INSERT INTO steps (mail_subject, mail_content, sequence_id) 
-VALUES ($1, $2, $3)
-RETURNING id, external_id, mail_subject, mail_content, sequence_id
+INSERT INTO steps (step_number, mail_subject, mail_content, sequence_id) 
+VALUES ($1, $2, $3, $4)
+RETURNING id, external_id, mail_subject, mail_content, step_number, sequence_id
 `
 
 type CreateStepParams struct {
+	StepNumber  int32  `json:"step_number"`
 	MailSubject string `json:"mail_subject"`
 	MailContent string `json:"mail_content"`
 	SequenceID  int32  `json:"sequence_id"`
 }
 
 func (q *Queries) CreateStep(ctx context.Context, arg CreateStepParams) (Step, error) {
-	row := q.db.QueryRow(ctx, createStep, arg.MailSubject, arg.MailContent, arg.SequenceID)
+	row := q.db.QueryRow(ctx, createStep,
+		arg.StepNumber,
+		arg.MailSubject,
+		arg.MailContent,
+		arg.SequenceID,
+	)
 	var i Step
 	err := row.Scan(
 		&i.ID,
 		&i.ExternalID,
 		&i.MailSubject,
 		&i.MailContent,
+		&i.StepNumber,
 		&i.SequenceID,
 	)
 	return i, err
@@ -38,6 +45,7 @@ func (q *Queries) CreateStep(ctx context.Context, arg CreateStepParams) (Step, e
 
 type CreateStepsParams struct {
 	ExternalID  uuid.UUID `json:"external_id"`
+	StepNumber  int32     `json:"step_number"`
 	MailSubject string    `json:"mail_subject"`
 	MailContent string    `json:"mail_content"`
 	SequenceID  int32     `json:"sequence_id"`
@@ -54,7 +62,7 @@ func (q *Queries) DeleteStep(ctx context.Context, externalID uuid.UUID) error {
 }
 
 const getStepById = `-- name: GetStepById :one
-SELECT steps.id, steps.external_id, steps.mail_subject, steps.mail_content, steps.sequence_id FROM steps
+SELECT steps.id, steps.external_id, steps.mail_subject, steps.mail_content, steps.step_number, steps.sequence_id FROM steps
 JOIN sequences ON steps.sequence_id = sequences.id AND sequences.external_id = $2
 WHERE steps.external_id = $1
 `
@@ -72,6 +80,7 @@ func (q *Queries) GetStepById(ctx context.Context, arg GetStepByIdParams) (Step,
 		&i.ExternalID,
 		&i.MailSubject,
 		&i.MailContent,
+		&i.StepNumber,
 		&i.SequenceID,
 	)
 	return i, err
@@ -79,25 +88,32 @@ func (q *Queries) GetStepById(ctx context.Context, arg GetStepByIdParams) (Step,
 
 const updateStep = `-- name: UpdateStep :one
 UPDATE steps 
-SET mail_subject = $2, mail_content = $3 
+SET mail_subject = $2, mail_content = $3 , step_number = $4
 WHERE external_id = $1 
-RETURNING id, external_id, mail_subject, mail_content, sequence_id
+RETURNING id, external_id, mail_subject, mail_content, step_number, sequence_id
 `
 
 type UpdateStepParams struct {
 	ExternalID  uuid.UUID `json:"external_id"`
 	MailSubject string    `json:"mail_subject"`
 	MailContent string    `json:"mail_content"`
+	StepNumber  int32     `json:"step_number"`
 }
 
 func (q *Queries) UpdateStep(ctx context.Context, arg UpdateStepParams) (Step, error) {
-	row := q.db.QueryRow(ctx, updateStep, arg.ExternalID, arg.MailSubject, arg.MailContent)
+	row := q.db.QueryRow(ctx, updateStep,
+		arg.ExternalID,
+		arg.MailSubject,
+		arg.MailContent,
+		arg.StepNumber,
+	)
 	var i Step
 	err := row.Scan(
 		&i.ID,
 		&i.ExternalID,
 		&i.MailSubject,
 		&i.MailContent,
+		&i.StepNumber,
 		&i.SequenceID,
 	)
 	return i, err

@@ -43,6 +43,12 @@ func (h *stepHandler) CreateStep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := req.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(&dto.HTTPError{Message: err.Error()})
+		return
+	}
+
 	step, err := h.stepService.CreateStep(r.Context(), sequenceID, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

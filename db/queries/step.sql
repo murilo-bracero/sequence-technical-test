@@ -1,10 +1,10 @@
 -- name: CreateSteps :copyfrom
-INSERT INTO steps (external_id, mail_subject, mail_content, sequence_id) 
-VALUES ($1, $2, $3, $4);
+INSERT INTO steps (external_id, step_number, mail_subject, mail_content, sequence_id) 
+VALUES ($1, $2, $3, $4, $5);
 
 -- name: CreateStep :one
-INSERT INTO steps (mail_subject, mail_content, sequence_id) 
-VALUES ($1, $2, $3)
+INSERT INTO steps (step_number, mail_subject, mail_content, sequence_id) 
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetStepById :one
@@ -14,7 +14,7 @@ WHERE steps.external_id = $1;
 
 -- name: UpdateStep :one
 UPDATE steps 
-SET mail_subject = $2, mail_content = $3 
+SET mail_subject = $2, mail_content = $3 , step_number = $4
 WHERE external_id = $1 
 RETURNING *;
 

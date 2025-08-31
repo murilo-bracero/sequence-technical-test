@@ -39,6 +39,7 @@ func (s *stepService) CreateStep(ctx context.Context, sequenceID uuid.UUID, req 
 	step := &dao.Step{
 		MailSubject: req.MailSubject,
 		MailContent: req.MailContent,
+		StepNumber:  int32(req.StepNumber),
 		SequenceID:  sequence.ID,
 	}
 
@@ -73,6 +74,10 @@ func (s *stepService) UpdateStep(ctx context.Context, sequenceID uuid.UUID, step
 		step.MailContent = *req.MailContent
 	}
 
+	if req.StepNumber != nil {
+		step.StepNumber = int32(*req.StepNumber)
+	}
+
 	if err := s.stepRepository.Update(context.Background(), step); err != nil {
 		slog.Error("failed to update step", err.Error(), err)
 		return nil, err
@@ -80,6 +85,7 @@ func (s *stepService) UpdateStep(ctx context.Context, sequenceID uuid.UUID, step
 
 	return &dto.StepResponse{
 		ExternalID:  step.ExternalID.String(),
+		StepNumber:  int(step.StepNumber),
 		MailSubject: step.MailSubject,
 		MailContent: step.MailContent,
 	}, nil

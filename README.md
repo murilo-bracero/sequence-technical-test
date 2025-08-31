@@ -101,4 +101,3 @@ This will install mockgen and it should be ready to use. Check if its installed 
 ```shell
 mockgen -version
 ```
-

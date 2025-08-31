@@ -42,6 +42,7 @@ type SequenceResponse struct {
 
 type StepResponse struct {
 	ExternalID  string `json:"id"`
+	StepNumber  int    `json:"stepNumber"`
 	MailSubject string `json:"mailSubject"`
 	MailContent string `json:"mailContent"`
 }

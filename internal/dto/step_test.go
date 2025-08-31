@@ -12,6 +12,7 @@ func TestCreateStepRequest_Validate(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		req := dto.CreateStepRequest{
+			StepNumber:  1,
 			MailSubject: "subject",
 			MailContent: "content",
 		}
@@ -20,6 +21,7 @@ func TestCreateStepRequest_Validate(t *testing.T) {
 
 	t.Run("should return error when mail subject is empty", func(t *testing.T) {
 		req := dto.CreateStepRequest{
+			StepNumber:  1,
 			MailSubject: "",
 			MailContent: "content",
 		}
@@ -31,6 +33,7 @@ func TestCreateStepRequest_Validate(t *testing.T) {
 
 	t.Run("should return error when mail content is empty", func(t *testing.T) {
 		req := dto.CreateStepRequest{
+			StepNumber:  1,
 			MailSubject: "subject",
 			MailContent: "",
 		}
@@ -38,5 +41,28 @@ func TestCreateStepRequest_Validate(t *testing.T) {
 		err := req.Validate()
 		assert.Error(t, err)
 		assert.Equal(t, "mail content is required", err.Error())
+	})
+
+	t.Run("should return error when step number is zero", func(t *testing.T) {
+		req := dto.CreateStepRequest{
+			StepNumber:  0,
+			MailSubject: "subject",
+			MailContent: "content",
+		}
+
+		err := req.Validate()
+		assert.Error(t, err)
+		assert.Equal(t, "step number is required", err.Error())
+	})
+
+	t.Run("should return error when step number is empty", func(t *testing.T) {
+		req := dto.CreateStepRequest{
+			MailSubject: "subject",
+			MailContent: "content",
+		}
+
+		err := req.Validate()
+		assert.Error(t, err)
+		assert.Equal(t, "step number is required", err.Error())
 	})
 }

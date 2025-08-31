@@ -34,7 +34,7 @@ func (s *StepHandlerTestSuite) TestStepHandler_CreateStep() {
 		Name:                 "My Sequence 1",
 		OpenTrackingEnabled:  false,
 		ClickTrackingEnabled: true,
-		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody"}},
+		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody", StepNumber: 1}},
 	})
 
 	assert.NoError(t, err)
@@ -44,6 +44,7 @@ func (s *StepHandlerTestSuite) TestStepHandler_CreateStep() {
 
 	payload := strings.NewReader(`
 	{
+	"stepNumber": 3,
     "mailSubject": "test subject",
     "mailContent": "test mailbody"
 	}
@@ -76,7 +77,7 @@ func (s *StepHandlerTestSuite) TestStepHandler_UpdateStep() {
 		Name:                 "My Sequence 1",
 		OpenTrackingEnabled:  false,
 		ClickTrackingEnabled: true,
-		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody"}},
+		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody", StepNumber: 1}},
 	})
 
 	assert.NoError(t, err)
@@ -118,7 +119,7 @@ func (s *StepHandlerTestSuite) TestStepHandler_DeleteStep() {
 		Name:                 "My Sequence 1",
 		OpenTrackingEnabled:  false,
 		ClickTrackingEnabled: true,
-		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody"}},
+		Steps:                []*dto.CreateStepRequest{{MailSubject: "test subject", MailContent: "test mailbody", StepNumber: 1}},
 	})
 
 	assert.NoError(t, err)

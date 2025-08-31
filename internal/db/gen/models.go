@@ -24,5 +24,6 @@ type Step struct {
 	ExternalID  uuid.UUID `json:"external_id"`
 	MailSubject string    `json:"mail_subject"`
 	MailContent string    `json:"mail_content"`
+	StepNumber  int32     `json:"step_number"`
 	SequenceID  int32     `json:"sequence_id"`
 }

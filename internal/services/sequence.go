@@ -58,6 +58,7 @@ func (s *sequenceService) GetSequences(ctx context.Context, size int, page int) 
 
 			sr.Steps = append(sr.Steps, &dto.StepResponse{
 				ExternalID:  step.ExternalID.String(),
+				StepNumber:  int(step.StepNumber),
 				MailSubject: step.MailSubject,
 				MailContent: step.MailContent,
 			})
@@ -100,6 +101,7 @@ func (s *sequenceService) GetSequence(ctx context.Context, id uuid.UUID) (*dto.S
 		}
 		response.Steps = append(response.Steps, &dto.StepResponse{
 			ExternalID:  step.ExternalID.String(),
+			StepNumber:  int(step.StepNumber),
 			MailSubject: step.MailSubject,
 			MailContent: step.MailContent,
 		})
@@ -145,8 +147,12 @@ func (s *sequenceService) UpdateSequence(ctx context.Context, id uuid.UUID, req 
 	}
 
 	for _, step := range sequence.Steps {
+		if step == nil {
+			continue
+		}
 		response.Steps = append(response.Steps, &dto.StepResponse{
 			ExternalID:  step.ExternalID.String(),
+			StepNumber:  int(step.StepNumber),
 			MailSubject: step.MailSubject,
 			MailContent: step.MailContent,
 		})
@@ -165,6 +171,7 @@ func (s *sequenceService) CreateSequence(ctx context.Context, req dto.CreateSequ
 
 	for _, step := range req.Steps {
 		sequence.Steps = append(sequence.Steps, &dao.Step{
+			StepNumber:  int32(step.StepNumber),
 			MailSubject: step.MailSubject,
 			MailContent: step.MailContent,
 		})
@@ -187,6 +194,7 @@ func (s *sequenceService) CreateSequence(ctx context.Context, req dto.CreateSequ
 	for _, step := range sequence.Steps {
 		response.Steps = append(response.Steps, &dto.StepResponse{
 			ExternalID:  step.ExternalID.String(),
+			StepNumber:  int(step.StepNumber),
 			MailSubject: step.MailSubject,
 			MailContent: step.MailContent,
 		})
