@@ -2,8 +2,9 @@ services:
   app:
     build: .
     ports:
-      - 8080:8080
+      - 8000:8000
     environment:
+      - APP_PORT=8000
       - DB_HOST=db.local
       - DB_PORT=5432
       - DB_USER=postgres
@@ -12,6 +13,8 @@ services:
       - DB_MAX_CONNECTIONS=10
       - DB_MIN_CONNECTIONS=1
       - DB_MAX_CONN_IDLE_TIME=30
+    depends_on:
+      - db
     networks:
       default:
         aliases:
@@ -24,7 +27,12 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=postgres
-    command: -path ./db/migrations/sequencemailbox -database "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/sequencemailbox?sslmode=disable" up
+    depends_on:
+      - db
+    command: >
+      migrate -path ./db/migrations/postgres -database "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/postgres?sslmode=disable" up
+      && migrate -path ./db/migrations/sequencemailbox -database "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/sequencemailbox?sslmode=disable" up
+       
   db:
     image: postgres:17.6-alpine3.22
     ports:
@@ -53,7 +61,6 @@ services:
 networks:
   default:
     name: sequence-technical-test-network
-
 
 volumes:
   pgdata:

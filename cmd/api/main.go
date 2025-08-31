@@ -9,6 +9,7 @@ import (
 	"github.com/murilo-bracero/sequence-technical-test/internal/handlers"
 	"github.com/murilo-bracero/sequence-technical-test/internal/repository"
 	"github.com/murilo-bracero/sequence-technical-test/internal/server"
+	"github.com/murilo-bracero/sequence-technical-test/internal/server/cache"
 	"github.com/murilo-bracero/sequence-technical-test/internal/server/config"
 	"github.com/murilo-bracero/sequence-technical-test/internal/services"
 )
@@ -28,15 +29,21 @@ func main() {
 
 	sequenceService := services.NewSequenceService(sequenceRepository)
 
-	sequenceHandler := handlers.NewSequenceHandler(cfg, sequenceService)
+	cache, err := cache.New(context.Background(), cfg)
+	if err != nil {
+		slog.Error("failed to create cache", err.Error(), err)
+		os.Exit(1)
+	}
+
+	sequenceHandler := handlers.NewSequenceHandler(cfg, cache, sequenceService)
 
 	stepRepository := repository.NewStepRepository(db)
 
 	stepService := services.NewStepService(sequenceRepository, stepRepository)
 
-	stepHandler := handlers.NewStepHandler(stepService)
+	stepHandler := handlers.NewStepHandler(cache, stepService)
 
-	if err := server.Start(db, sequenceHandler, stepHandler); err != nil {
+	if err := server.Start(cfg, db, sequenceHandler, stepHandler); err != nil {
 		os.Exit(1)
 	}
 }

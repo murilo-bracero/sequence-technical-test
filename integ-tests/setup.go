@@ -16,6 +16,7 @@ import (
 	"github.com/murilo-bracero/sequence-technical-test/internal/handlers"
 	"github.com/murilo-bracero/sequence-technical-test/internal/repository"
 	"github.com/murilo-bracero/sequence-technical-test/internal/server"
+	"github.com/murilo-bracero/sequence-technical-test/internal/server/cache"
 	"github.com/murilo-bracero/sequence-technical-test/internal/server/config"
 	"github.com/murilo-bracero/sequence-technical-test/internal/services"
 	"github.com/testcontainers/testcontainers-go"
@@ -179,6 +180,7 @@ func (e *EnvironmentCommands) startApp(ctx context.Context) error {
 	}
 
 	cfg := &config.Config{
+		AppPort:          "8000",
 		PostgresHost:     host,
 		PostgresPort:     port.Int(),
 		PostgresUser:     "integtestpostgres",
@@ -194,21 +196,26 @@ func (e *EnvironmentCommands) startApp(ctx context.Context) error {
 		return err
 	}
 
+	cache, err := cache.New(context.Background(), cfg)
+	if err != nil {
+		return err
+	}
+
 	e.db = db
 
 	sequenceRepository := repository.NewSequenceRepository(db)
 
 	sequenceService := services.NewSequenceService(sequenceRepository)
 
-	sequenceHandler := handlers.NewSequenceHandler(cfg, sequenceService)
+	sequenceHandler := handlers.NewSequenceHandler(cfg, cache, sequenceService)
 
 	stepRepository := repository.NewStepRepository(db)
 
 	stepService := services.NewStepService(sequenceRepository, stepRepository)
 
-	stepHandler := handlers.NewStepHandler(stepService)
+	stepHandler := handlers.NewStepHandler(cache, stepService)
 
-	go server.Start(db, sequenceHandler, stepHandler)
+	go server.Start(cfg, db, sequenceHandler, stepHandler)
 
 	return nil
 }

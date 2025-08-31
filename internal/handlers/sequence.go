@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/murilo-bracero/sequence-technical-test/internal/dto"
+	"github.com/murilo-bracero/sequence-technical-test/internal/server/cache"
 	"github.com/murilo-bracero/sequence-technical-test/internal/server/config"
 	"github.com/murilo-bracero/sequence-technical-test/internal/services"
 	"github.com/murilo-bracero/sequence-technical-test/internal/utils"
@@ -20,14 +22,22 @@ type SequenceHandler interface {
 
 type sequenceHandler struct {
 	cfg             *config.Config
+	cache           cache.Cache
 	sequenceService services.SequenceService
 }
 
-func NewSequenceHandler(cfg *config.Config, sequenceService services.SequenceService) *sequenceHandler {
-	return &sequenceHandler{cfg: cfg, sequenceService: sequenceService}
+func NewSequenceHandler(cfg *config.Config, cache cache.Cache, sequenceService services.SequenceService) *sequenceHandler {
+	return &sequenceHandler{cfg: cfg, cache: cache, sequenceService: sequenceService}
 }
 
 func (h *sequenceHandler) GetSequences(w http.ResponseWriter, r *http.Request) {
+	if h.cache.Get("sequences") != nil {
+		w.Write(h.cache.Get("sequences"))
+		return
+	}
+
+	slog.Info("hehehehe")
+
 	limit := utils.SafeAtoi(r.URL.Query().Get("limit"), 50)
 
 	limit = min(limit, 100)
@@ -40,11 +50,21 @@ func (h *sequenceHandler) GetSequences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(sequences)
+
+	if raw, err := json.Marshal(sequences); err == nil {
+		h.cache.Set("sequences", raw)
+	}
 }
 
 func (h *sequenceHandler) GetSequence(w http.ResponseWriter, r *http.Request) {
+	if h.cache.Get("sequence-"+r.PathValue("id")) != nil {
+		w.Write(h.cache.Get("sequence-" + r.PathValue("id")))
+		return
+	}
+
+	slog.Info("hehehehe 2")
+
 	id := r.PathValue("id")
 
 	uid, err := uuid.Parse(id)
@@ -64,6 +84,10 @@ func (h *sequenceHandler) GetSequence(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(sequence)
+
+	if raw, err := json.Marshal(sequence); err == nil {
+		h.cache.Set("sequence-"+id, raw)
+	}
 }
 
 func (h *sequenceHandler) UpdateSequence(w http.ResponseWriter, r *http.Request) {
@@ -93,6 +117,9 @@ func (h *sequenceHandler) UpdateSequence(w http.ResponseWriter, r *http.Request)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(sequence)
+
+	h.cache.Evict("sequence-" + id)
+	h.cache.Evict("sequences")
 }
 
 func (h *sequenceHandler) CreateSequence(w http.ResponseWriter, r *http.Request) {
@@ -116,4 +143,6 @@ func (h *sequenceHandler) CreateSequence(w http.ResponseWriter, r *http.Request)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(sequence)
+
+	h.cache.Evict("sequences")
 }

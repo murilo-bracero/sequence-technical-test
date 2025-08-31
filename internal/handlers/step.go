@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/murilo-bracero/sequence-technical-test/internal/dto"
+	"github.com/murilo-bracero/sequence-technical-test/internal/server/cache"
 	"github.com/murilo-bracero/sequence-technical-test/internal/services"
 )
 
@@ -18,13 +19,14 @@ type StepHandler interface {
 }
 
 type stepHandler struct {
+	cache       cache.Cache
 	stepService services.StepService
 }
 
 var _ StepHandler = (*stepHandler)(nil)
 
-func NewStepHandler(stepService services.StepService) *stepHandler {
-	return &stepHandler{stepService: stepService}
+func NewStepHandler(cache cache.Cache, stepService services.StepService) *stepHandler {
+	return &stepHandler{stepService: stepService, cache: cache}
 }
 
 func (h *stepHandler) CreateStep(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +51,8 @@ func (h *stepHandler) CreateStep(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(step)
+
+	h.cache.Evict("sequence-" + r.PathValue("sequence_id"))
 }
 
 func (h *stepHandler) UpdateStep(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +90,8 @@ func (h *stepHandler) UpdateStep(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(step)
+
+	h.cache.Evict("sequence-" + sequenceId)
 }
 
 func (h *stepHandler) DeleteStep(w http.ResponseWriter, r *http.Request) {
@@ -112,4 +118,6 @@ func (h *stepHandler) DeleteStep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+
+	h.cache.Evict("sequence-" + sequenceId)
 }

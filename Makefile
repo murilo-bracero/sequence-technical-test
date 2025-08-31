@@ -5,6 +5,9 @@ DB_PASSWORD := $(shell sed -n 's/^DB_PASSWORD=//p' .env)
 DB_HOST := $(shell sed -n 's/^DB_HOST=//p' .env)
 DB_PORT := $(shell sed -n 's/^DB_PORT=//p' .env)
 
+install_tools:
+	go install go.uber.org/mock/mockgen@latest
+
 migration:
 	docker run -v ./db/migrations/$(folder):/migrations migrate/migrate create -ext sql -dir /migrations -seq $(name)
 

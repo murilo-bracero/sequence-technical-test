@@ -55,6 +55,25 @@ func (s *SequenceHandlerTestSuite) TestSequenceHandler_CreateSequence() {
 	assert.Len(t, body.Steps, 1)
 }
 
+func (s *SequenceHandlerTestSuite) TestSequenceHandler_CreateSequence_BadRequest() {
+	t := s.T()
+
+	url := "http://localhost:8000/sequences"
+
+	payload := strings.NewReader("{\"name\": \"\",\"openTrackingEnabled\": false,\"clickTrackingEnabled\": true,\"steps\": [{\"mailSubject\": \"Subject 96\",\"mailContent\": \"78 Sat, 30 Aug 2025 23:51:34 GMT\"}]}")
+
+	req, err := http.NewRequest("POST", url, payload)
+
+	assert.NoError(t, err)
+
+	req.Header.Add("content-type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 400, res.StatusCode)
+}
+
 func (s *SequenceHandlerTestSuite) TestSequenceHandler_GetSequences() {
 	t := s.T()
 

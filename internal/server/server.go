@@ -3,15 +3,17 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
 	"github.com/murilo-bracero/sequence-technical-test/internal/db"
 	"github.com/murilo-bracero/sequence-technical-test/internal/handlers"
+	"github.com/murilo-bracero/sequence-technical-test/internal/server/config"
 	"github.com/murilo-bracero/sequence-technical-test/internal/server/router"
 )
 
-func Start(db db.DB, sequenceHandler handlers.SequenceHandler, stepHandler handlers.StepHandler) error {
+func Start(cfg *config.Config, db db.DB, sequenceHandler handlers.SequenceHandler, stepHandler handlers.StepHandler) error {
 	r := http.NewServeMux()
 
 	router.SequenceRouter(sequenceHandler, r)
@@ -38,8 +40,16 @@ func Start(db db.DB, sequenceHandler handlers.SequenceHandler, stepHandler handl
 		w.WriteHeader(http.StatusOK)
 	})
 
-	slog.Info("Starting server on port 8000")
-	if err := http.ListenAndServe(":8000", r); err != nil {
+	var port string
+
+	if cfg.AppPort != "" {
+		port = fmt.Sprintf(":%s", cfg.AppPort)
+	} else {
+		port = ":8000"
+	}
+
+	slog.Info("Starting server", "port", port)
+	if err := http.ListenAndServe(port, r); err != nil {
 		slog.Error("failed to start server", err.Error(), err)
 		return err
 	}

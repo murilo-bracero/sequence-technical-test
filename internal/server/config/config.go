@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	AppPort          string
 	PostgresHost     string
 	PostgresPort     int
 	PostgresUser     string
@@ -19,6 +20,9 @@ type Config struct {
 	MaxConnIdleTime  int
 
 	MaxSequencePagination int
+
+	MaxCacheMemory  int
+	CacheLifeWindow int
 }
 
 func New() *Config {
@@ -27,6 +31,7 @@ func New() *Config {
 	}
 
 	return &Config{
+		AppPort:          os.Getenv("APP_PORT"),
 		PostgresHost:     os.Getenv("DB_HOST"),
 		PostgresPort:     utils.SafeAtoi(os.Getenv("DB_PORT"), 5432),
 		PostgresUser:     os.Getenv("DB_USER"),
@@ -37,5 +42,8 @@ func New() *Config {
 		MaxConnIdleTime:  utils.SafeAtoi(os.Getenv("DB_MAX_CONN_IDLE_TIME"), 30),
 
 		MaxSequencePagination: utils.SafeAtoi(os.Getenv("MAX_SEQUENCE_PAGINATION"), 50),
+
+		CacheLifeWindow: utils.SafeAtoi(os.Getenv("CACHE_LIFE_WINDOW"), 30),
+		MaxCacheMemory:  utils.SafeAtoi(os.Getenv("MAX_CACHE_MEMORY"), 10),
 	}
 }
